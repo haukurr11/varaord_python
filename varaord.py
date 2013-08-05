@@ -6,6 +6,7 @@ import os.path
 
 SQLITE_FILE = "shsnid.db"
 ICELANDIC_ALPHABET = "aábdðeéfghiíjklmnoóprstuúvxyýþæö"
+UPPER_ICELANDIC_ALPHABET = "AÁBDÐEÉFGHIÍJKLMNOÓPRSTUÚVXYÝÞÆÖ"
 
 def main():
     if not os.path.isfile(SQLITE_FILE):
@@ -39,7 +40,7 @@ def main():
         print errmsg % newword
         return
     splitted = re.split(r"([^" + ICELANDIC_ALPHABET + \
-                                 ICELANDIC_ALPHABET.upper() + "])",text)
+                                 UPPER_ICELANDIC_ALPHABET + "])",text)
     for i,word in enumerate(splitted):
         if len(word)> 1:
             for ow in oldwords:
