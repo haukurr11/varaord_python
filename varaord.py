@@ -22,7 +22,9 @@ def main():
         print "The script needs at least 3 arguments"
         return
     try:
-        text = open(infile,"r").read()
+        ofile = open(infile,"r")
+        text  = ofile.read()
+        ofile.close()
     except IOError:
         print "Could not open the file " + infile + ",does it exist?"
         return 
@@ -30,24 +32,31 @@ def main():
                      from bin where uppflettiord='%s'"""
     cur.execute(sql_command % oldword)
     oldwords = cur.fetchall()
+    cur.execute(sql_command % newword)
+    newwords = cur.fetchall()
+    con.close()
     errmsg = "Could not find the word %s in the dictionary,is it icelandic?"
     if len(oldwords) == 0:
         print errmsg % oldword
         return
-    cur.execute(sql_command % newword)
-    newwords = cur.fetchall()
     if len(newwords) == 0:
         print errmsg % newword
         return
     splitted = re.split(r"([^" + ICELANDIC_ALPHABET + \
                                  UPPER_ICELANDIC_ALPHABET + "])",text)
     for i,word in enumerate(splitted):
-        if len(word)> 1:
-            for ow in oldwords:
-                if ow[0].encode("utf8") == word:
-                    nw = filter(lambda x: x[1] == ow[1],newwords)[0]
-                    splitted[i] = nw[0].encode("utf8")
-                    break
+        if len(word) == 1 and word not in ICELANDIC_ALPHABET:
+           continue
+        for ow in oldwords:
+            if ow[0].encode("utf8") == word.lower():
+                nw = filter(lambda x: x[1] == ow[1],newwords)[0]
+                splitted[i] = nw[0].encode("utf8")
+                if word[0] in UPPER_ICELANDIC_ALPHABET:
+                    alphabet_index = ICELANDIC_ALPHABET.index(splitted[i][0])
+                    titlestring = UPPER_ICELANDIC_ALPHABET[alphabet_index] \
+                                  + splitted[i][1:]
+                    splitted[i] = titlestring #make first letter uppercase
+                break
     replaced_text = "".join(splitted).strip()
     outname = infile[:infile.rfind(".")] + "_replaced.txt"
     if os.path.isfile(outname):
